@@ -37,6 +37,7 @@ struct PLAYER_NAME : public Player {
 
     queue<Pos> Q;
     Q.push(p);
+
     while(not Q.empty()){
       Pos u = Q.front();
       Q.pop();
@@ -60,6 +61,14 @@ struct PLAYER_NAME : public Player {
           }
         }
       }
+    }
+    return;
+  }
+
+  void moure_dwarf(){
+    vector<int> d = dwarves(me());
+    for(auto& i : d){
+      
     }
   }
 
