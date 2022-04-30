@@ -33,36 +33,40 @@ struct PLAYER_NAME : public Player {
     return id2 != -1 and unit(id2).player == me();
   }
 
-  Pos bfs(Pos p, int ut, vector<vector<int>>& dist, vector<vector<Pos>>& prev){
+  Pos bfs_wizard(Pos p, vector<vector<int>>& dist, vector<vector<Pos>>& prev){
     dist[p.i][p.j] = 0;
-
     queue<Pos> Q;
     Q.push(p);
-
     while(not Q.empty()){
       Pos u = Q.front();
       Q.pop();
-      //Si ut==0 vol dir que és un Dwarf en cas contrari és un Wizard.
-      if(ut==0){
-        for(int i = 0; i < 8; ++i){
-          Pos p2 = u + Dir(i);
-          if(pos_ok(p2) and dist[p2.i][p2.j] == inf and condicions_dwarf(p2)){
-            Q.push(p2);
-            dist[p2.i][p2.j] = dist[u.i][u.j] + 1;
-            prev[p2.i][p2.j] = u;
-            if(cell(p2).treasure) return p2;
-          }
+      for(int i = 0; i < 8; i+=2){
+        Pos p2 = u + Dir(i);
+        if(pos_ok(p2) and dist[p2.i][p2.j] == inf and condicions_wizard(p2)){
+          Q.push(p2);
+          dist[p2.i][p2.j] = dist[u.i][u.j] + 1;
+          prev[p2.i][p2.j] = u;
+          if(buscar_dwarf(p2)) return p2;
         }
       }
-      else{
-        for(int i = 0; i < 8; i+=2){
-          Pos p2 = u + Dir(i);
-          if(pos_ok(p2) and dist[p2.i][p2.j] == inf and condicions_wizard(p2)){
-            Q.push(p2);
-            dist[p2.i][p2.j] = dist[u.i][u.j] + 1;
-            prev[p2.i][p2.j] = u;
-            if(buscar_dwarf(p2)) return p2;
-          }
+    }
+    return Pos(-1, -1);
+  }
+
+  Pos bfs_dwarf(Pos p, vector<vector<int>>& dist, vector<vector<Pos>>& prev){
+    dist[p.i][p.j] = 0;
+    queue<Pos> Q;
+    Q.push(p);
+    while(not Q.empty()){
+      Pos u = Q.front();
+      Q.pop();
+      for(int i = 0; i < 8; ++i){
+        Pos p2 = u + Dir(i);
+        if(pos_ok(p2) and dist[p2.i][p2.j] == inf and condicions_dwarf(p2)){
+          Q.push(p2);
+          dist[p2.i][p2.j] = dist[u.i][u.j] + 1;
+          prev[p2.i][p2.j] = u;
+          if(cell(p2).treasure) return p2;
         }
       }
     }
@@ -74,7 +78,7 @@ struct PLAYER_NAME : public Player {
     for(auto& id : d){
       vector<vector<int>> dist(60, vector<int>(60,inf));
       vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
-      Pos p = bfs(unit(id).pos, 0, dist, prev);
+      Pos p = bfs_dwarf(unit(id).pos, dist, prev);
       if (p != Pos(-1, -1)){
         int i = p.i;
         int j = p.j;
