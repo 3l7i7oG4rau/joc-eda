@@ -28,10 +28,8 @@ struct PLAYER_NAME : public Player {
     return true;
   }
 
-  void bfs(Pos p, UnitType ut){
-    vector<vector<int>> dist(60, vector<int>(60,inf));
+  void bfs(Pos p, int ut, vector<vector<int>>& dist, vector<vector<Pos>> prev){
     dist[p.i][p.j] = 0;
-    vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
 
     queue<Pos> Q;
     Q.push(p);
@@ -39,13 +37,15 @@ struct PLAYER_NAME : public Player {
     while(not Q.empty()){
       Pos u = Q.front();
       Q.pop();
-      if(ut==Dwarf){
+      //Si ut==0 vol dir que és un Dwarf en cas contrari és un Wizard.
+      if(ut==0){
         for(int i = 0; i < 8; ++i){
           Pos p2 = u + Dir(i);
           if(dist[p2.i][p2.j] == inf and pos_ok(p2) and condicions_dwarf(p2)){
             Q.push(p2);
             dist[p2.i][p2.j] = dist[u.i][u.j] + 1;
             prev[p2.i][p2.j] = u;
+            if(cell(p2).treasure) return;
           }
         }
       }
@@ -56,6 +56,7 @@ struct PLAYER_NAME : public Player {
             Q.push(p2);
             dist[p2.i][p2.j] = dist[u.i][u.j] + 1;
             prev[p2.i][p2.j] = u;
+            if(cell(p2).treasure) return;
           }
         }
       }
@@ -66,7 +67,8 @@ struct PLAYER_NAME : public Player {
   void moure_dwarf(){
     vector<int> d = dwarves(me());
     for(auto& i : d){
-      
+      vector<vector<int>> dist(60, vector<int>(60,inf));
+      vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
     }
   }
 
