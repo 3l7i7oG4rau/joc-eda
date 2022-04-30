@@ -75,24 +75,45 @@ struct PLAYER_NAME : public Player {
       vector<vector<int>> dist(60, vector<int>(60,inf));
       vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
       Pos p = bfs(unit(id).pos, 0, dist, prev);
-      cerr << p << endl;
       if (p != Pos(-1, -1)){
-        int i, j;
-        i = p.i;
-        j= p.j;
+        int i = p.i;
+        int j = p.j;
         while(dist[i][j] > 1){
           Pos p_pre = prev[i][j];
+          //cerr << p_pre << endl;
           i = p_pre.i;
           j = p_pre.j;
         }
-        int x = p.i - i;
-        int y = p.j - j;
-        if(x == 1 and y == 0) command(id, Bottom);
-        else if(x == -1 and y == 0) command(id, Top);
-        else if(x == 0 and y == 1) command(id, Right);
-        else if(x == 0 and y == -1) command(id, Left);
+        int i2 = i - unit(id).pos.i;
+        int j2 = j - unit(id).pos.j;
+        if(i2 == 1 and j2 == 0) {
+          command(id, Bottom);
+        }
+        else if(i2 == 1 and j2 == 1){
+          command(id, BR);
+        }
+        else if(i2 == -1 and j2 == 0) {
+          command(id, Top);
+        }
+        else if(i2 == -1 and j2 == -1) {
+          command(id, TL);
+        }
+        else if(i2 == 0 and j2 == 1) {
+          command(id, Right);
+        }
+        else if(i2 == -1 and j2 == 1){
+          command(id, RT);
+        }
+        else if(i2 == 0 and j2 == -1) {
+          command(id, Left);
+        }
+        else if(i2 == 1 and j2 == -1) {
+          command(id, LB);
+        }
       }
-      else command(id, None);
+      else {
+        command(id, None);
+      }
     }
   }
 
