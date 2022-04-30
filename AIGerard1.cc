@@ -84,7 +84,6 @@ struct PLAYER_NAME : public Player {
         int j = p.j;
         while(dist[i][j] > 1){
           Pos p_pre = prev[i][j];
-          //cerr << p_pre << endl;
           i = p_pre.i;
           j = p_pre.j;
         }
