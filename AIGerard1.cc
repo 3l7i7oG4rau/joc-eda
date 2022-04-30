@@ -1,7 +1,5 @@
 #include "Player.hh"
-#include <vector>
 #include <limits>
-#include <queue>
 
 /**
  * Write the name of your player and save this file
@@ -23,17 +21,17 @@ struct PLAYER_NAME : public Player {
   const int inf = numeric_limits<int>::max();
   
   bool condicions_dwarf(Pos p){
-
+    return true;
   }
 
   bool condicions_wizard(Pos p){
-
+    return true;
   }
 
   void bfs(Pos p, UnitType ut){
     vector<vector<int>> dist(60, vector<int>(60,inf));
     dist[p.i][p.j] = 0;
-    vector<vector<Pos>> prev(60, vector<int>(60, Pos(-1, -1)));
+    vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
 
     queue<Pos> Q;
     Q.push(p);
@@ -41,9 +39,9 @@ struct PLAYER_NAME : public Player {
     while(not Q.empty()){
       Pos u = Q.front();
       Q.pop();
-      if(ut==UnitType(0)){
+      if(ut==Dwarf){
         for(int i = 0; i < 8; ++i){
-          p2 = u + Dir(i);
+          Pos p2 = u + Dir(i);
           if(dist[p2.i][p2.j] == inf and pos_ok(p2) and condicions_dwarf(p2)){
             Q.push(p2);
             dist[p2.i][p2.j] = dist[u.i][u.j] + 1;
@@ -53,7 +51,7 @@ struct PLAYER_NAME : public Player {
       }
       else{
         for(int i = 0; i < 8; i+=2){
-          p2 = u + Dir(i);
+          Pos p2 = u + Dir(i);
           if(dist[p2.i][p2.j] == inf and pos_ok(p2) and condicions_wizard(p2)){
             Q.push(p2);
             dist[p2.i][p2.j] = dist[u.i][u.j] + 1;
