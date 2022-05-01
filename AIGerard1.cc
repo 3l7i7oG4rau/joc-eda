@@ -35,12 +35,21 @@ struct PLAYER_NAME : public Player {
 
   bool buscar_dwarf(Pos p){
     bool dwarf = false;
-    int id2 = cell(p).id;
     vector<int> d = dwarves(me());
     for(const auto& id : d){
-      if(unit(id).type == Dwarf) dwarf = true;
+      if(unit(id).pos == p){
+        dwarf = true;
+        for(int i = 0; i< 8; i += 2){
+          Pos p_tmp = p + Dir(i);
+          if(pos_ok(p_tmp) and cell(p_tmp).id != -1 and unit(cell(p_tmp).id).type == Wizard and unit(cell(p_tmp).id).player == me()){
+            dwarf = false;
+            break;
+          }
+        }
+        break;
+      }
     }
-    return id2 != -1 and unit(id2).player == me() and dwarf;
+    return dwarf;
   }
 
   Pos bfs_wizard(Pos p, vector<vector<int>>& dist, vector<vector<Pos>>& prev){
@@ -67,6 +76,7 @@ struct PLAYER_NAME : public Player {
     bool moure = false;
     if(cell(p2).id != -1 and cell(p2).owner != me() and unit(cell(p_ini).id).health >= unit(cell(p2).id).health) moure = true;
     else if(cell(p2).treasure) moure = true;
+    else if((round() > 125 or nb_treasures(me()) > 20) and cell(p2).owner != me()) moure = true;
     return moure;
   }
 
@@ -145,15 +155,15 @@ struct PLAYER_NAME : public Player {
     vector<int> d = dwarves(me());
     for(auto& id : d){
       Pos p_tmp = enemic_proper(unit(id).pos);
+      vector<vector<int>> dist(60, vector<int>(60,inf));
+      vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
+      Pos p = bfs_dwarf(unit(id).pos, dist, prev);
       if(p_tmp != Pos(-1, -1)){
         int i = p_tmp.i - unit(id).pos.i;
         int j = p_tmp.j - unit(id).pos.j;
         executar_comand(id, i ,j);
       }
-      else{
-        vector<vector<int>> dist(60, vector<int>(60,inf));
-        vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
-        Pos p = bfs_dwarf(unit(id).pos, dist, prev);
+      else if(p != Pos(-1, -1)){
         int i = p.i;
         int j = p.j;
         while(dist[i][j] > 1){
@@ -165,8 +175,16 @@ struct PLAYER_NAME : public Player {
         int j2 = j - unit(id).pos.j;
         executar_comand(id, i2, j2);
       }
-      command(id, None);
+      else command(id, None);
     }
+  }
+
+  bool dwarf_a_prop(Pos p){
+    for(int i = 0; i < 8; i += 2){
+      Pos p_tmp = p + Dir(i);
+      return cell(p_tmp).id != -1 and unit(cell(p_tmp).id).type == Dwarf and unit(cell(p_tmp).id).player == me();
+    }
+    return false;
   }
 
   void moure_wizard(){
@@ -175,7 +193,7 @@ struct PLAYER_NAME : public Player {
       vector<vector<int>> dist(60, vector<int>(60,inf));
       vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
       Pos p = bfs_wizard(unit(id).pos, dist, prev);
-      if (p != Pos(-1, -1)){
+      if (p != Pos(-1, -1) and not dwarf_a_prop(unit(id).pos)){
         int i = p.i;
         int j = p.j;
         while(dist[i][j] > 1){
@@ -185,18 +203,7 @@ struct PLAYER_NAME : public Player {
         }
         int i2 = i - unit(id).pos.i;
         int j2 = j - unit(id).pos.j;
-        if(i2 == 1 and j2 == 0) {
-          command(id, Bottom);
-        }
-        else if(i2 == -1 and j2 == 0) {
-          command(id, Top);
-        }
-        else if(i2 == 0 and j2 == 1) {
-          command(id, Right);
-        }
-        else if(i2 == 0 and j2 == -1) {
-          command(id, Left);
-        }
+        executar_comand(id, i2, j2);
       }
       else {
         command(id, None);
