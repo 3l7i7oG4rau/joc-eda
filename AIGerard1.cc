@@ -19,18 +19,23 @@ struct PLAYER_NAME : public Player {
   }
 
   const int inf = numeric_limits<int>::max();
-  
+
   bool condicions_dwarf(Pos p){
     bool trol = true;
     vector<int> t = trolls();
     for(const auto& id : t){
       if(unit(id).pos == p) trol = false;
     }
-    return cell(p).type != Abyss and cell(p).type != Granite and unit(balrog_id()).pos != p and trol and cell(p).owner != me();
+    if(round() > 150 or nb_treasures(me()) > 25){
+      return cell(p).type != Abyss and cell(p).type != Granite and trol and cell(p).owner != me() and cell(p).type != Rock;
+    }
+    else{
+      return cell(p).type != Abyss and cell(p).type != Granite and trol and cell(p).owner != me();
+    }
   }
 
   bool condicions_wizard(Pos p){
-    return cell(p).type != Abyss and cell(p).type != Granite and cell(p).type != Rock and unit(balrog_id()).pos != p;
+    return cell(p).type != Abyss and cell(p).type != Granite and cell(p).type != Rock;
   }
 
   bool buscar_dwarf(Pos p){
@@ -74,9 +79,9 @@ struct PLAYER_NAME : public Player {
 
   bool dwarf_accio(Pos p2, Pos p_ini){
     bool moure = false;
-    if(cell(p2).id != -1 and cell(p2).owner != me() and unit(cell(p_ini).id).health >= unit(cell(p2).id).health) moure = true;
+    if(cell(p2).id != -1 and cell(p2).owner != me() and cell(p2).id != balrog_id() and unit(cell(p_ini).id).health >= unit(cell(p2).id).health) moure = true;
     else if(cell(p2).treasure) moure = true;
-    else if((round() > 125 or nb_treasures(me()) > 20) and cell(p2).owner != me()) moure = true;
+    else if((round() > 150 or nb_treasures(me()) > 25) and cell(p2).owner != me() and cell(p2).type != Outside) moure = true;
     return moure;
   }
 
@@ -182,7 +187,9 @@ struct PLAYER_NAME : public Player {
   bool dwarf_a_prop(Pos p){
     for(int i = 0; i < 8; i += 2){
       Pos p_tmp = p + Dir(i);
-      return cell(p_tmp).id != -1 and unit(cell(p_tmp).id).type == Dwarf and unit(cell(p_tmp).id).player == me();
+      if(pos_ok(p_tmp)){
+        return cell(p_tmp).id != -1 and unit(cell(p_tmp).id).type == Dwarf and unit(cell(p_tmp).id).player == me();
+      }
     }
     return false;
   }
