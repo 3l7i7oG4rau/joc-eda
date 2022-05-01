@@ -20,20 +20,6 @@ struct PLAYER_NAME : public Player {
 
   const int inf = numeric_limits<int>::max();
 
-  bool condicions_dwarf(Pos p){
-    bool trol = true;
-    vector<int> t = trolls();
-    for(const auto& id : t){
-      if(unit(id).pos == p) trol = false;
-    }
-    if(round() > 150 or nb_treasures(me()) > 25){
-      return cell(p).type != Abyss and cell(p).type != Granite and trol and cell(p).owner != me() and cell(p).type != Rock;
-    }
-    else{
-      return cell(p).type != Abyss and cell(p).type != Granite and trol and cell(p).owner != me();
-    }
-  }
-
   bool condicions_wizard(Pos p){
     return cell(p).type != Abyss and cell(p).type != Granite and cell(p).type != Rock;
   }
@@ -75,6 +61,20 @@ struct PLAYER_NAME : public Player {
       }
     }
     return Pos(-1, -1);
+  }
+
+    bool condicions_dwarf(Pos p){
+    bool trol = true;
+    vector<int> t = trolls();
+    for(const auto& id : t){
+      if(unit(id).pos == p) trol = false;
+    }
+    if(round() > 150 or nb_treasures(me()) > 25){
+      return cell(p).type != Abyss and cell(p).type != Granite and trol and cell(p).owner != me() and cell(p).type != Rock;
+    }
+    else{
+      return cell(p).type != Abyss and cell(p).type != Granite and trol and cell(p).owner != me();
+    }
   }
 
   bool dwarf_accio(Pos p2, Pos p_ini){
