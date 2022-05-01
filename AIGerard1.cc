@@ -90,23 +90,32 @@ struct PLAYER_NAME : public Player {
     return Pos(-1, -1);
   }
 
-  void moure_dwarf(){
-    vector<int> d = dwarves(me());
-    for(auto& id : d){
-      vector<vector<int>> dist(60, vector<int>(60,inf));
-      vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
-      Pos p = bfs_dwarf(unit(id).pos, dist, prev);
-      if (p != Pos(-1, -1)){
-        int i = p.i;
-        int j = p.j;
-        while(dist[i][j] > 1){
-          Pos p_pre = prev[i][j];
-          i = p_pre.i;
-          j = p_pre.j;
+  Pos enemic_proper(Pos p){
+    for(int i = 0; i<8; ++i){
+      Pos p2 = p + Dir(i);
+      if(pos_ok(p2)){
+        if(cell(p2).id == balrog_id()){
+          int i = p.i - p2.i;
+          int j = p.j - p2.j;
+          return Pos(p.i + 1, p.j + j);
         }
-        int i2 = i - unit(id).pos.i;
-        int j2 = j - unit(id).pos.j;
-        if(i2 == 1 and j2 == 0) {
+        else if(cell(p2).id != -1 and unit(cell(p2).id).player != me()){
+          bool trol = false;
+          vector<int> t = trolls();
+          for(const auto& id : t){
+            if(unit(id).pos == p2) trol = true;
+          }
+          if(not trol){
+            if(unit(cell(p).id).health >= unit(cell(p2).id).health) return p2;
+          }
+        }
+      }
+    }
+    return Pos(-1, -1);
+  }
+
+  void executar_comand(int id, int i2, int j2){
+    if(i2 == 1 and j2 == 0) {
           command(id, Bottom);
         }
         else if(i2 == 1 and j2 == 1){
@@ -130,10 +139,33 @@ struct PLAYER_NAME : public Player {
         else if(i2 == 1 and j2 == -1) {
           command(id, LB);
         }
+  }
+
+  void moure_dwarf(){
+    vector<int> d = dwarves(me());
+    for(auto& id : d){
+      Pos p_tmp = enemic_proper(unit(id).pos);
+      if(p_tmp != Pos(-1, -1)){
+        int i = p_tmp.i - unit(id).pos.i;
+        int j = p_tmp.j - unit(id).pos.j;
+        executar_comand(id, i ,j);
       }
-      else {
-        command(id, None);
+      else{
+        vector<vector<int>> dist(60, vector<int>(60,inf));
+        vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
+        Pos p = bfs_dwarf(unit(id).pos, dist, prev);
+        int i = p.i;
+        int j = p.j;
+        while(dist[i][j] > 1){
+          Pos p_pre = prev[i][j];
+          i = p_pre.i;
+          j = p_pre.j;
+        }
+        int i2 = i - unit(id).pos.i;
+        int j2 = j - unit(id).pos.j;
+        executar_comand(id, i2, j2);
       }
+      command(id, None);
     }
   }
 
