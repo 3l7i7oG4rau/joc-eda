@@ -24,11 +24,11 @@ struct PLAYER_NAME : public Player {
     return cell(p).type != Abyss and cell(p).type != Granite and cell(p).type != Rock;
   }
 
-  bool buscar_dwarf(Pos p){
+  bool buscar_dwarf(Pos p, set<Pos> posicions){
     bool dwarf = false;
     vector<int> d = dwarves(me());
     for(const auto& id : d){
-      if(unit(id).pos == p){
+      if(unit(id).pos == p and posicions.count(p) == 0){
         dwarf = true;
         for(int i = 0; i< 8; i += 2){
           Pos p_tmp = p + Dir(i);
@@ -43,7 +43,7 @@ struct PLAYER_NAME : public Player {
     return dwarf;
   }
 
-  Pos bfs_wizard(Pos p, vector<vector<int>>& dist, vector<vector<Pos>>& prev){
+  Pos bfs_wizard(Pos p, vector<vector<int>>& dist, vector<vector<Pos>>& prev, set<Pos> posicions){
     dist[p.i][p.j] = 0;
     queue<Pos> Q;
     Q.push(p);
@@ -56,7 +56,7 @@ struct PLAYER_NAME : public Player {
           Q.push(p2);
           dist[p2.i][p2.j] = dist[u.i][u.j] + 1;
           prev[p2.i][p2.j] = u;
-          if(buscar_dwarf(p2)) return p2;
+          if(buscar_dwarf(p2, posicions)) return p2;
         }
       }
     }
@@ -85,7 +85,7 @@ struct PLAYER_NAME : public Player {
     return moure;
   }
 
-  Pos bfs_dwarf(Pos p, vector<vector<int>>& dist, vector<vector<Pos>>& prev){
+  Pos bfs_dwarf(Pos p, vector<vector<int>>& dist, vector<vector<Pos>>& prev, set<Pos> posicions){
     dist[p.i][p.j] = 0;
     queue<Pos> Q;
     Q.push(p);
@@ -98,7 +98,7 @@ struct PLAYER_NAME : public Player {
           Q.push(p2);
           dist[p2.i][p2.j] = dist[u.i][u.j] + 1;
           prev[p2.i][p2.j] = u;
-          if(dwarf_accio(p2, p)) return p2;
+          if(posicions.count(p2) == 0 and dwarf_accio(p2, p)) return p2;
         }
       }
     }
@@ -112,16 +112,24 @@ struct PLAYER_NAME : public Player {
         if(cell(p2).id == balrog_id()){
           int i = p.i - p2.i;
           int j = p.j - p2.j;
-          return Pos(p.i + 1, p.j + j);
+          return Pos(p.i + i, p.j + j);
         }
         else if(cell(p2).id != -1 and unit(cell(p2).id).player != me()){
           bool trol = false;
           vector<int> t = trolls();
           for(const auto& id : t){
-            if(unit(id).pos == p2) trol = true;
+            if(unit(id).pos == p2){ 
+              trol = true;
+              break;
+            }
           }
           if(not trol){
             if(unit(cell(p).id).health >= unit(cell(p2).id).health) return p2;
+          }
+          else{
+            int i = p.i - p2.i;
+            int j = p.j - p2.j;
+            return Pos(p.i + i, p.j + j);
           }
         }
       }
@@ -158,17 +166,19 @@ struct PLAYER_NAME : public Player {
 
   void moure_dwarf(){
     vector<int> d = dwarves(me());
+    set<Pos> posicions;
     for(auto& id : d){
       Pos p_tmp = enemic_proper(unit(id).pos);
       vector<vector<int>> dist(60, vector<int>(60,inf));
       vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
-      Pos p = bfs_dwarf(unit(id).pos, dist, prev);
+      Pos p = bfs_dwarf(unit(id).pos, dist, prev, posicions);
       if(p_tmp != Pos(-1, -1)){
         int i = p_tmp.i - unit(id).pos.i;
         int j = p_tmp.j - unit(id).pos.j;
         executar_comand(id, i ,j);
       }
       else if(p != Pos(-1, -1)){
+        posicions.insert(p);
         int i = p.i;
         int j = p.j;
         while(dist[i][j] > 1){
@@ -196,10 +206,12 @@ struct PLAYER_NAME : public Player {
 
   void moure_wizard(){
     vector<int> w = wizards(me());
+    set<Pos> posicions;
     for(auto& id : w){
       vector<vector<int>> dist(60, vector<int>(60,inf));
       vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
-      Pos p = bfs_wizard(unit(id).pos, dist, prev);
+      Pos p = bfs_wizard(unit(id).pos, dist, prev, posicions);
+      posicions.insert(p);
       if (p != Pos(-1, -1) and not dwarf_a_prop(unit(id).pos)){
         int i = p.i;
         int j = p.j;
@@ -219,11 +231,6 @@ struct PLAYER_NAME : public Player {
   }
 
   virtual void play () {
-    /*
-    Per moure dwarf he d'afegir que no tots vagin a per els tresors ex. només 50%, 
-    i també he de fer un set amb les posicions on es volen moure els dwarf per d'aqeusta manera que els dwarf
-    no vulguin anar a la mateixa casella i evitar que vagin tots alhora.
-    */
     moure_dwarf();
     moure_wizard();
   }
