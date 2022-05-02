@@ -219,6 +219,11 @@ struct PLAYER_NAME : public Player {
   }
 
   virtual void play () {
+    /*
+    Per moure dwarf he d'afegir que no tots vagin a per els tresors ex. només 50%, 
+    i també he de fer un set amb les posicions on es volen moure els dwarf per d'aqeusta manera que els dwarf
+    no vulguin anar a la mateixa casella i evitar que vagin tots alhora.
+    */
     moure_dwarf();
     moure_wizard();
   }
