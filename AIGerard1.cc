@@ -179,11 +179,11 @@ Pos dijkstra_dwarf(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p, set<Po
   while (not Q.empty()) {
     Pos u = Q.top().second;
     Q.pop();
-    if(posicions.count(u) == 0 and dwarf_accio(p2, p)) return u;
+    if(posicions.count(u) == 0 and dwarf_accio(u, s) and u != s) return u;
     if (not S[u.i][u.j]) {
       S[u.i][u.j] = true;
       for (int i = 0; i < 8; ++i) {
-        Pos v = u + Dir(0);
+        Pos v = u + Dir(i);
         if(pos_ok(v)){
           if(cell(v).type != Granite and cell(v).type != Abyss){
             int c;
@@ -209,7 +209,7 @@ Pos dijkstra_dwarf(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p, set<Po
       Pos p_tmp = enemic_proper(unit(id).pos);
       vector<vector<int>> dist(60, vector<int>(60,inf));
       vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
-      Pos p = bfs_dwarf(unit(id).pos, dist, prev, posicions);
+      Pos p = dijkstra_dwarf(unit(id).pos, dist, prev, posicions);
       if(p_tmp != Pos(-1, -1)){
         int i = p_tmp.i - unit(id).pos.i;
         int j = p_tmp.j - unit(id).pos.j;
