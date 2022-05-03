@@ -64,16 +64,19 @@ struct PLAYER_NAME : public Player {
   }
 
     bool condicions_dwarf(Pos p){
-    bool trol = true;
+    bool trol = false;
     vector<int> t = trolls();
     for(const auto& id : t){
-      if(unit(id).pos == p) trol = false;
+      if(unit(id).pos == p) {
+        trol = true;
+        break;
+      }
     }
-    if(round() > 150 or nb_treasures(me()) > 25){
-      return cell(p).type != Abyss and cell(p).type != Granite and trol and cell(p).owner != me() and cell(p).type != Rock;
+    if(round() > 125 or nb_treasures(me()) > 20){
+      return cell(p).type != Abyss and cell(p).type != Granite and not trol and cell(p).owner != me() and cell(p).type != Rock;
     }
     else{
-      return cell(p).type != Abyss and cell(p).type != Granite and trol and cell(p).owner != me();
+      return cell(p).type != Abyss and cell(p).type != Granite and not trol and cell(p).owner != me();
     }
   }
 
@@ -81,7 +84,7 @@ struct PLAYER_NAME : public Player {
     bool moure = false;
     if(cell(p2).id != -1 and cell(p2).owner != me() and cell(p2).id != balrog_id() and unit(cell(p_ini).id).health >= unit(cell(p2).id).health) moure = true;
     else if(cell(p2).treasure) moure = true;
-    else if((round() > 150 or nb_treasures(me()) > 25) and cell(p2).owner != me() and cell(p2).type != Outside) moure = true;
+    else if((round() > 125 or nb_treasures(me()) > 15) and cell(p2).owner != me() and cell(p2).type != Outside) moure = true;
     return moure;
   }
 
@@ -163,6 +166,39 @@ struct PLAYER_NAME : public Player {
           command(id, LB);
         }
   }
+
+typedef pair<double, Pos> ArcP;
+
+void dijkstra_eda(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p) {
+  d = vector<vector<int>>(60, vector<int>(60, inf));
+  d[s.i][s.j] = 0;
+  p = vector<vector<Pos>>(60, vector<Pos>(60, Pos(-1, -1)));;
+  vector<vector<bool>> S(60, vector<bool>(60, false));
+  priority_queue<ArcP, vector<ArcP>, greater<ArcP> > Q;
+  Q.push(ArcP(0, s));
+  while (not Q.empty()) {
+    Pos u = Q.top().second;
+    Q.pop();
+    if (not S[u.i][u.j]) {
+      S[u.i][u.j] = true;
+      for (int i = 0; i < 8; ++i) {
+        Pos v = u + Dir(0);
+        if(pos_ok(v)){
+          if(cell(v).type != Granite and cell(v).type != Abyss){
+            int c;
+            if(cell(v).type == Rock) c = cell(v).turns;
+            else c = 1;
+            if (d[v.i][v.j] > d[u.i][u.j] + c) {
+                d[v.i][v.j] = d[u.i][u.j] + c;
+                p[v.i][v.j] = u;
+                Q.push(ArcP(d[v.i][v.j], v));
+            }
+          }
+        }
+      }
+    }
+  }
+}
 
   void moure_dwarf(){
     vector<int> d = dwarves(me());
