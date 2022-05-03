@@ -24,7 +24,7 @@ struct PLAYER_NAME : public Player {
     return cell(p).type != Abyss and cell(p).type != Granite and cell(p).type != Rock;
   }
 
-  bool buscar_dwarf(Pos p, set<Pos> posicions){
+  bool buscar_dwarf(Pos p, set<Pos>& posicions){
     bool dwarf = false;
     vector<int> d = dwarves(me());
     for(const auto& id : d){
@@ -43,7 +43,7 @@ struct PLAYER_NAME : public Player {
     return dwarf;
   }
 
-  Pos bfs_wizard(Pos p, vector<vector<int>>& dist, vector<vector<Pos>>& prev, set<Pos> posicions){
+  Pos bfs_wizard(Pos p, vector<vector<int>>& dist, vector<vector<Pos>>& prev, set<Pos>& posicions){
     dist[p.i][p.j] = 0;
     queue<Pos> Q;
     Q.push(p);
@@ -88,7 +88,7 @@ struct PLAYER_NAME : public Player {
     return moure;
   }
 
-  Pos bfs_dwarf(Pos p, vector<vector<int>>& dist, vector<vector<Pos>>& prev, set<Pos> posicions){
+  Pos bfs_dwarf(Pos p, vector<vector<int>>& dist, vector<vector<Pos>>& prev, set<Pos>& posicions){
     dist[p.i][p.j] = 0;
     queue<Pos> Q;
     Q.push(p);
@@ -169,7 +169,7 @@ struct PLAYER_NAME : public Player {
 
 typedef pair<double, Pos> ArcP;
 
-void dijkstra_eda(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p) {
+Pos dijkstra_dwarf(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p, set<Pos>& posicions) {
   d = vector<vector<int>>(60, vector<int>(60, inf));
   d[s.i][s.j] = 0;
   p = vector<vector<Pos>>(60, vector<Pos>(60, Pos(-1, -1)));;
@@ -179,6 +179,7 @@ void dijkstra_eda(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p) {
   while (not Q.empty()) {
     Pos u = Q.top().second;
     Q.pop();
+    if(posicions.count(u) == 0 and dwarf_accio(p2, p)) return u;
     if (not S[u.i][u.j]) {
       S[u.i][u.j] = true;
       for (int i = 0; i < 8; ++i) {
@@ -198,6 +199,7 @@ void dijkstra_eda(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p) {
       }
     }
   }
+  return Pos(-1, -1);
 }
 
   void moure_dwarf(){
