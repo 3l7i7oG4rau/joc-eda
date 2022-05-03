@@ -63,49 +63,12 @@ struct PLAYER_NAME : public Player {
     return Pos(-1, -1);
   }
 
-    bool condicions_dwarf(Pos p){
-    bool trol = false;
-    vector<int> t = trolls();
-    for(const auto& id : t){
-      if(unit(id).pos == p) {
-        trol = true;
-        break;
-      }
-    }
-    if(round() > 125 or nb_treasures(me()) > 20){
-      return cell(p).type != Abyss and cell(p).type != Granite and not trol and cell(p).owner != me() and cell(p).type != Rock;
-    }
-    else{
-      return cell(p).type != Abyss and cell(p).type != Granite and not trol and cell(p).owner != me();
-    }
-  }
-
   bool dwarf_accio(Pos p2, Pos p_ini){
     bool moure = false;
     if(cell(p2).id != -1 and cell(p2).owner != me() and cell(p2).id != balrog_id() and unit(cell(p_ini).id).health >= unit(cell(p2).id).health) moure = true;
     else if(cell(p2).treasure) moure = true;
     else if((round() > 125 or nb_treasures(me()) > 15) and cell(p2).owner != me() and cell(p2).type != Outside) moure = true;
     return moure;
-  }
-
-  Pos bfs_dwarf(Pos p, vector<vector<int>>& dist, vector<vector<Pos>>& prev, set<Pos>& posicions){
-    dist[p.i][p.j] = 0;
-    queue<Pos> Q;
-    Q.push(p);
-    while(not Q.empty()){
-      Pos u = Q.front();
-      Q.pop();
-      for(int i = 0; i < 8; ++i){
-        Pos p2 = u + Dir(i);
-        if(pos_ok(p2) and dist[p2.i][p2.j] == inf and condicions_dwarf(p2)){
-          Q.push(p2);
-          dist[p2.i][p2.j] = dist[u.i][u.j] + 1;
-          prev[p2.i][p2.j] = u;
-          if(posicions.count(p2) == 0 and dwarf_accio(p2, p)) return p2;
-        }
-      }
-    }
-    return Pos(-1, -1);
   }
 
   Pos enemic_proper(Pos p){
@@ -128,6 +91,11 @@ struct PLAYER_NAME : public Player {
           }
           if(not trol){
             if(unit(cell(p).id).health >= unit(cell(p2).id).health) return p2;
+            else{
+              int i = p.i - p2.i;
+              int j = p.j - p2.j;
+              return Pos(i,j);
+            }
           }
           else{
             int i = p.i - p2.i;
