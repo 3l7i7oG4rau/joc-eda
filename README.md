@@ -5,7 +5,7 @@ Finalment el jugador **AIElTiToGarau.cc** és el que s'ha utilitzat per la compe
 
 - [x] Algorisme de Dijkstra implementat, pèro no dins dels dwarf.
 - [x] Afegir algorisme de dijkstra per els dwarf.
-- [ ] Tots els dwarf se'n van cap a fora fer que no hi vagin.
-- [ ] Fer que no tots els dwarf vagin a per els tresors.
+- [x] Tots els dwarf se'n van cap a fora fer que no hi vagin.
+- [x] Fer que no tots els dwarf vagin a per els tresors.
 - [x] Fer un set on es posin les posicions on volen anar els dwarf per així no intentin anar tots al mateix lloc.
 - [x] Fer un set de posicions amb les posicions on es volen moure els Wizards perquè dos Wizards no vagin al mateix Dwarf.
