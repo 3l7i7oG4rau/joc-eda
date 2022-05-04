@@ -138,8 +138,8 @@ bool dwarf_accio(Pos p2, Pos p_ini, vector<vector<int>> &d){
     else if(cell(p2).owner != me() and cell(p2).type != Outside) moure = true;
   }
   else{
-    if(cell(p2).treasure and d[p2.i][p2.j] < 50) moure = true;
-    if(cell(p2).owner != me() and cell(p2).type != Outside) moure = true;
+    if(cell(p2).treasure and d[p2.i][p2.j] < 15) moure = true;
+    else if(cell(p2).owner != me() and cell(p2).type != Outside) moure = true;
   }
   return moure;
 }
