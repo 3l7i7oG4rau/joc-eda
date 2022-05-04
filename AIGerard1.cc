@@ -133,8 +133,14 @@ void executar_comand(int id, int i2, int j2){
 
 bool dwarf_accio(Pos p2, Pos p_ini, vector<vector<int>> &d){
   bool moure = false;
-  if(cell(p2).treasure and d[p2.i][p2.j] < 50) moure = true;
-  //else if(cell(p2).owner != me() and cell(p2).type != Outside) moure = true;
+  if(round() < 100){
+    if(cell(p2).treasure and d[p2.i][p2.j] < 50) moure = true;
+    else if(cell(p2).owner != me() and cell(p2).type != Outside) moure = true;
+  }
+  else{
+    if(cell(p2).treasure and d[p2.i][p2.j] < 25) moure = true;
+    if(cell(p2).owner != me() and cell(p2).type != Outside and nb_treasures(me())>20) moure = true;
+  }
   return moure;
 }
 
