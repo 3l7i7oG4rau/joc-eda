@@ -133,14 +133,14 @@ void executar_comand(int id, int i2, int j2){
 
 bool dwarf_accio(Pos p2, Pos p_ini, vector<vector<int>> &d){
   bool moure = false;
-  if(cell(p2).treasure and d[p2.i][p2.j] < 100) moure = true;
-  else if(cell(p2).owner != me() and cell(p2).type != Outside) moure = true;
+  if(cell(p2).treasure and d[p2.i][p2.j] < 50) moure = true;
+  //else if(cell(p2).owner != me() and cell(p2).type != Outside) moure = true;
   return moure;
 }
 
 typedef pair<double, Pos> ArcP;
 
-Pos dijkstra_dwarf(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p, set<Pos>& posicions) {
+Pos dijkstra_dwarf(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p) {
   d = vector<vector<int>>(60, vector<int>(60, inf));
   d[s.i][s.j] = 0;
   p = vector<vector<Pos>>(60, vector<Pos>(60, Pos(-1, -1)));;
@@ -150,7 +150,7 @@ Pos dijkstra_dwarf(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p, set<Po
   while (not Q.empty()) {
     Pos u = Q.top().second;
     Q.pop();
-    if(posicions.count(u) == 0 and dwarf_accio(u, s, d) and u != s) return u;
+    if(dwarf_accio(u, s, d) and u != s) return u;
     if (not S[u.i][u.j]) {
       S[u.i][u.j] = true;
       for (int i = 0; i < 8; ++i) {
@@ -175,24 +175,21 @@ Pos dijkstra_dwarf(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p, set<Po
 
   void moure_dwarf(){
     vector<int> d = dwarves(me());
-    set<Pos> posicions;
     for(auto& id : d){
       Pos p_tmp = enemic_proper(unit(id).pos);
       vector<vector<int>> dist(60, vector<int>(60,inf));
       vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
-      Pos p = dijkstra_dwarf(unit(id).pos, dist, prev, posicions);
+      Pos p = dijkstra_dwarf(unit(id).pos, dist, prev);
       if(p_tmp != Pos(-1, -1)){
-        posicions.insert(p_tmp);
         int i = p_tmp.i - unit(id).pos.i;
         int j = p_tmp.j - unit(id).pos.j;
         executar_comand(id, i ,j);
       }
       else if(p != Pos(-1, -1)){
-        posicions.insert(p);
         int i = p.i;
         int j = p.j;
-        while(dist[i][j] > 1){
-          Pos p_pre = prev[i][j];
+        Pos p_pre;
+        while(unit(id).pos != (p_pre = prev[i][j])){
           i = p_pre.i;
           j = p_pre.j;
         }
