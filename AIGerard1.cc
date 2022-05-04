@@ -63,52 +63,7 @@ struct PLAYER_NAME : public Player {
     return Pos(-1, -1);
   }
 
-  bool dwarf_accio(Pos p2, Pos p_ini){
-    bool moure = false;
-    if(cell(p2).id != -1 and cell(p2).owner != me() and cell(p2).id != balrog_id() and unit(cell(p_ini).id).health >= unit(cell(p2).id).health) moure = true;
-    else if(cell(p2).treasure) moure = true;
-    else if((round() > 125 or nb_treasures(me()) > 15) and cell(p2).owner != me() and cell(p2).type != Outside) moure = true;
-    return moure;
-  }
-
-  Pos enemic_proper(Pos p){
-    for(int i = 0; i<8; ++i){
-      Pos p2 = p + Dir(i);
-      if(pos_ok(p2)){
-        if(cell(p2).id == balrog_id()){
-          int i = p.i - p2.i;
-          int j = p.j - p2.j;
-          return Pos(p.i + i, p.j + j);
-        }
-        else if(cell(p2).id != -1 and unit(cell(p2).id).player != me()){
-          bool trol = false;
-          vector<int> t = trolls();
-          for(const auto& id : t){
-            if(unit(id).pos == p2){ 
-              trol = true;
-              break;
-            }
-          }
-          if(not trol){
-            if(unit(cell(p).id).health >= unit(cell(p2).id).health) return p2;
-            else{
-              int i = p.i - p2.i;
-              int j = p.j - p2.j;
-              return Pos(i,j);
-            }
-          }
-          else{
-            int i = p.i - p2.i;
-            int j = p.j - p2.j;
-            return Pos(p.i + i, p.j + j);
-          }
-        }
-      }
-    }
-    return Pos(-1, -1);
-  }
-
-  void executar_comand(int id, int i2, int j2){
+void executar_comand(int id, int i2, int j2){
     if(i2 == 1 and j2 == 0) {
           command(id, Bottom);
         }
@@ -135,6 +90,54 @@ struct PLAYER_NAME : public Player {
         }
   }
 
+  Pos enemic_proper(Pos p){
+    for(int i = 0; i<8; ++i){
+      Pos p2 = p + Dir(i);
+      if(pos_ok(p2)){
+        if(cell(p2).id == balrog_id()){
+          int i = p.i - p2.i;
+          int j = p.j - p2.j;
+          return Pos(p.i + i, p.j + j);
+        }
+        else if(cell(p2).id != -1 and unit(cell(p2).id).player != me()){
+          bool trol = false;
+          vector<int> t = trolls();
+          for(const auto& id : t){
+            if(unit(id).pos == p2){ 
+              trol = true;
+              break;
+            }
+          }
+          if(not trol){
+            if(unit(cell(p).id).health > unit(cell(p2).id).health) return p2;
+            else{
+              int i = p.i - p2.i;
+              int j = p.j - p2.j;
+              Pos p_tmp = Pos(p.i + i, p.j + j);
+              if(pos_ok(p_tmp) and cell(p_tmp).type != Granite and cell(p_tmp).type != Rock and cell(p_tmp).type != Abyss) return p2;
+              else continue;
+            }
+          }
+          else{
+            int i = p.i - p2.i;
+            int j = p.j - p2.j;
+            Pos p_tmp = Pos(p.i + i, p.j + j);
+            if(pos_ok(p_tmp) and cell(p_tmp).type != Granite and cell(p_tmp).type != Rock and cell(p_tmp).type != Abyss) return p2;
+            else continue;
+          }
+        }
+      }
+    }
+    return Pos(-1, -1);
+  }
+
+bool dwarf_accio(Pos p2, Pos p_ini, vector<vector<int>> &d){
+  bool moure = false;
+  if(cell(p2).treasure and d[p2.i][p2.j] < 100) moure = true;
+  else if(cell(p2).owner != me() and cell(p2).type != Outside) moure = true;
+  return moure;
+}
+
 typedef pair<double, Pos> ArcP;
 
 Pos dijkstra_dwarf(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p, set<Pos>& posicions) {
@@ -147,7 +150,7 @@ Pos dijkstra_dwarf(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p, set<Po
   while (not Q.empty()) {
     Pos u = Q.top().second;
     Q.pop();
-    if(posicions.count(u) == 0 and dwarf_accio(u, s) and u != s) return u;
+    if(posicions.count(u) == 0 and dwarf_accio(u, s, d) and u != s) return u;
     if (not S[u.i][u.j]) {
       S[u.i][u.j] = true;
       for (int i = 0; i < 8; ++i) {
@@ -179,6 +182,7 @@ Pos dijkstra_dwarf(Pos s, vector<vector<int>> &d, vector<vector<Pos>> &p, set<Po
       vector<vector<Pos>> prev(60, vector<Pos>(60, Pos(-1, -1)));
       Pos p = dijkstra_dwarf(unit(id).pos, dist, prev, posicions);
       if(p_tmp != Pos(-1, -1)){
+        posicions.insert(p_tmp);
         int i = p_tmp.i - unit(id).pos.i;
         int j = p_tmp.j - unit(id).pos.j;
         executar_comand(id, i ,j);
